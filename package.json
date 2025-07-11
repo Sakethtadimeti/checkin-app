@@ -1,0 +1,11 @@
+{
+  "name": "checkin-app",
+  "version": "1.0.0",
+  "description": "Full-stack team check-in system with Docker and LocalStack",
+  "scripts": {
+    "dev": "docker-compose up -d",
+    "stop": "docker-compose down"
+  },
+  "author": "Saketh Tadimeti",
+  "license": "MIT"
+}

@@ -1,0 +1,27 @@
+{
+  "name": "checkin-backend",
+  "version": "1.0.0",
+  "description": "Backend for checkin-app",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node-dev --respawn --transpile-only index.ts",
+    "test": "test",
+    "build:docker-image": "docker build -t checkin-backend-image .",
+    "run:docker-image": "docker run --name checkin-backend-container --env-file .env -p 3002:3002 checkin-backend-image",
+    "remove:docker-image": "docker rmi checkin-backend-image",
+    "stop:docker-container": "docker stop checkin-backend-container",
+    "remove:docker-container": "docker rm checkin-backend-container"
+  },
+  "author": "saketh-tadimeti",
+  "license": "ISC",
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.6",
+    "@types/node": "^24.0.13",
+    "ts-node-dev": "^2.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0"
+  }
+}
