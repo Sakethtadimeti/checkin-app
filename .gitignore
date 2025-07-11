@@ -1,0 +1,5 @@
+# Ignore all files in the volume directory
+volume/
+
+node_modules/
+.cursor/
