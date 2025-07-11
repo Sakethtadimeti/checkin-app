@@ -1,0 +1,33 @@
+{
+  "name": "auth-server",
+  "version": "1.0.0",
+  "description": "Mock auth server",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node-dev --respawn --transpile-only index.ts",
+    "test": "test",
+    "build:docker-image": "docker build -t auth-server-image .",
+    "run:docker-image": "docker run --name auth-server-container --env-file .env -p 3001:3001 auth-server-image",
+    "remove:docker-image": "docker rmi auth-server-image",
+    "stop:docker-container": "docker stop auth-server-container",
+    "remove:docker-container": "docker rm auth-server-container"
+  },
+  "author": "saketh-tadimeti",
+  "license": "ISC",
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.0.13",
+    "ts-node-dev": "^2.0.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
