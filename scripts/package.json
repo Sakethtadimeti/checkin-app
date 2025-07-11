@@ -1,0 +1,27 @@
+{
+  "name": "checkin-scripts",
+  "version": "1.0.0",
+  "description": "Setup scripts for checkin-app",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "bootstrap": "ts-node bootstrap.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.844.0",
+    "@aws-sdk/lib-dynamodb": "^3.844.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.6",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  },
+  "keywords": [
+    "dynamodb",
+    "localstack",
+    "setup"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
