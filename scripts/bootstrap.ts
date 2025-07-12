@@ -5,14 +5,12 @@ import {
   listAllTables,
   logEnvironment,
   checkTableExists,
-} from "./helpers/dynamodb";
-import {
   allTableConfigs,
   usersTableConfig,
   checkinsTableConfig,
   responsesTableConfig,
   TABLE_NAMES,
-} from "./helpers/table-configs";
+} from "@checkin-app/common";
 
 // Command line argument parsing
 const command = process.argv[2];

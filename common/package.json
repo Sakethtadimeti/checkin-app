@@ -1,0 +1,29 @@
+{
+  "name": "@checkin-app/common",
+  "version": "1.0.0",
+  "description": "Shared utilities and types for checkin-app",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.844.0",
+    "@aws-sdk/lib-dynamodb": "^3.844.0",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.2",
+    "@tsconfig/node20": "^20.1.6",
+    "@types/bcrypt": "^5.0.2"
+  },
+  "keywords": [
+    "checkin-app",
+    "shared",
+    "utilities"
+  ],
+  "author": "Checkin App Team",
+  "license": "MIT"
+}

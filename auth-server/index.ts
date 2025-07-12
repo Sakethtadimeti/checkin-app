@@ -1,11 +1,17 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import {
+  authenticateUser,
+  findUserById,
+  getAllUsers,
+  initializeDynamoDB,
+  dynamodbClient,
+} from "@checkin-app/common";
 
-// Load environment variables
-dotenv.config();
+// Initialize the common package with DynamoDB client
+initializeDynamoDB(dynamodbClient);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -39,7 +45,7 @@ app.get("/health", (req, res) => {
  * POST /api/v1/login
  * User login endpoint - returns accessToken & refreshToken
  */
-app.post("/api/v1/login", (req, res) => {
+app.post("/api/v1/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -51,20 +57,26 @@ app.post("/api/v1/login", (req, res) => {
       });
     }
 
-    // Mock user validation (in real app, you'd check against database)
-    // For demo purposes, accept any email/password
-    const mockUser = {
-      id: "user-123",
-      email: email,
-      role: "member",
-    };
+    // Authenticate user using the common package
+    console.log(`🔍 Attempting to authenticate user: ${email}`);
+    const user = await authenticateUser(email, password);
+
+    if (!user) {
+      console.log(`❌ Authentication failed for user: ${email}`);
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    console.log(`✅ Authentication successful for user: ${email} (${user.id})`);
 
     // Generate access token
     const accessToken = jwt.sign(
       {
-        id: mockUser.id,
-        email: mockUser.email,
-        role: mockUser.role,
+        id: user.id,
+        email: user.email,
+        role: user.role,
         type: "access",
       },
       JWT_SECRET,
@@ -74,8 +86,8 @@ app.post("/api/v1/login", (req, res) => {
     // Generate refresh token
     const refreshToken = jwt.sign(
       {
-        id: mockUser.id,
-        email: mockUser.email,
+        id: user.id,
+        email: user.email,
         type: "refresh",
       },
       JWT_SECRET,
@@ -89,9 +101,10 @@ app.post("/api/v1/login", (req, res) => {
         accessToken,
         refreshToken,
         user: {
-          id: mockUser.id,
-          email: mockUser.email,
-          role: mockUser.role,
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          name: user.name,
         },
       },
     });
@@ -108,7 +121,7 @@ app.post("/api/v1/login", (req, res) => {
  * POST /api/v1/refresh
  * Refresh token endpoint - returns new accessToken & refreshToken
  */
-app.post("/api/v1/refresh", (req, res) => {
+app.post("/api/v1/refresh", async (req, res) => {
   try {
     const { refreshToken } = req.body;
 
@@ -129,19 +142,22 @@ app.post("/api/v1/refresh", (req, res) => {
       });
     }
 
-    // Mock user data (in real app, you'd fetch from database)
-    const mockUser = {
-      id: decoded.id,
-      email: decoded.email,
-      role: "member",
-    };
+    // Fetch real user data from database
+    const user = await findUserById(decoded.id);
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
     // Generate new access token
     const newAccessToken = jwt.sign(
       {
-        id: mockUser.id,
-        email: mockUser.email,
-        role: mockUser.role,
+        id: user.id,
+        email: user.email,
+        role: user.role,
         type: "access",
       },
       JWT_SECRET,
@@ -151,8 +167,8 @@ app.post("/api/v1/refresh", (req, res) => {
     // Generate new refresh token
     const newRefreshToken = jwt.sign(
       {
-        id: mockUser.id,
-        email: mockUser.email,
+        id: user.id,
+        email: user.email,
         type: "refresh",
       },
       JWT_SECRET,
@@ -166,9 +182,10 @@ app.post("/api/v1/refresh", (req, res) => {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
         user: {
-          id: mockUser.id,
-          email: mockUser.email,
-          role: mockUser.role,
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          name: user.name,
         },
       },
     });
@@ -177,6 +194,47 @@ app.post("/api/v1/refresh", (req, res) => {
     res.status(401).json({
       success: false,
       message: "Invalid refresh token",
+    });
+  }
+});
+
+/**
+ * GET /api/v1/users
+ * Debug endpoint to list all users (for development only)
+ */
+app.get("/api/v1/users", async (req, res) => {
+  try {
+    console.log("🔍 Fetching all users for debugging...");
+    const users = await getAllUsers();
+
+    // Return users without sensitive information
+    const safeUsers = users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      managerId: user.managerId,
+      teamId: user.teamId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      // Note: passwordHash is intentionally excluded for security
+    }));
+
+    console.log(`✅ Found ${users.length} users in database`);
+
+    res.json({
+      success: true,
+      message: `Found ${users.length} users`,
+      data: {
+        count: users.length,
+        users: safeUsers,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error while fetching users",
     });
   }
 });
@@ -204,4 +262,5 @@ app.listen(PORT, () => {
   console.log(`📋 Health check: http://localhost:${PORT}/health`);
   console.log(`🔑 Login endpoint: http://localhost:${PORT}/api/v1/login`);
   console.log(`🔄 Refresh endpoint: http://localhost:${PORT}/api/v1/refresh`);
+  console.log(`👥 Debug users endpoint: http://localhost:${PORT}/api/v1/users`);
 });

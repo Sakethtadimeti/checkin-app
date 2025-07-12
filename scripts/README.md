@@ -1,135 +1,94 @@
-# 🗄️ DynamoDB Setup Scripts
+# Checkin App Setup Scripts
 
-This directory contains TypeScript scripts to set up DynamoDB tables in LocalStack for the checkin-app.
+This directory contains scripts for setting up and managing the checkin application infrastructure.
 
-## 📋 Prerequisites
+## Prerequisites
 
-1. **LocalStack running** on port 4566
-2. **Node.js** and npm installed
-3. **TypeScript** and ts-node for running scripts
+- Docker and Docker Compose running
+- LocalStack container running (via `docker-compose up localstack`)
+- Node.js and npm installed
 
-## 🚀 Setup
+## Scripts
 
-### 1. Install Dependencies
+### Bootstrap (`npm run bootstrap`)
+
+Sets up the complete infrastructure:
+
+- Creates DynamoDB tables in LocalStack
+- Verifies table creation
+- Lists all tables
+
+### Add User (`npm run add-user`)
+
+Adds a new user to the system with proper password hashing and validation.
+
+#### Usage
 
 ```bash
-cd scripts
+npm run add-user <email> <password> <name> <role> [managerId]
+```
+
+#### Arguments
+
+- **email** (required): User's email address
+- **password** (required): User's password (will be hashed using bcrypt)
+- **name** (required): User's display name
+- **role** (required): User role (`manager` or `member`)
+- **managerId** (optional): Manager's user ID (required for members, not allowed for managers)
+
+#### Examples
+
+```bash
+# Create a manager
+npm run add-user john@example.com password123 "John Doe" manager
+
+# Create a member with a manager
+npm run add-user jane@example.com password123 "Jane Smith" member d27e68ea-3d47-408e-890b-d1595b0f26c1
+
+# Show help
+npm run add-user -- --help
+```
+
+#### Validation Rules
+
+- Email must be in valid format
+- Password must be at least 6 characters long
+- Name cannot be empty
+- Role must be either `manager` or `member`
+- Members must have a `managerId`
+- Managers cannot have a `managerId`
+- Email must be unique (duplicate check)
+
+#### Features
+
+- **Password Security**: Passwords are hashed using bcrypt with 12 salt rounds
+- **Data Validation**: Comprehensive input validation with helpful error messages
+- **Duplicate Prevention**: Checks for existing users by email
+- **Role-based Logic**: Enforces manager/member relationship rules
+- **UUID Generation**: Automatically generates unique user IDs
+- **Timestamps**: Adds creation and update timestamps
+
+## Installation
+
+```bash
 npm install
 ```
 
-### 2. Configure Environment
+## Environment Setup
 
-```bash
-cp env.example .env
-# Edit .env if needed
-```
+The scripts use environment variables for AWS/LocalStack configuration. Create a `.env` file or set these variables:
 
-### 3. Run Scripts
+- `AWS_ENDPOINT`: LocalStack endpoint (default: `http://localhost:4566`)
+- `AWS_REGION`: AWS region (default: `us-east-1`)
+- `AWS_ACCESS_KEY_ID`: Access key (default: `test`)
+- `AWS_SECRET_ACCESS_KEY`: Secret key (default: `test`)
 
-#### Bootstrap Script (Recommended)
+## Database Schema
 
-The bootstrap script provides a unified interface for managing all DynamoDB tables:
+The scripts create three DynamoDB tables:
 
-```bash
-# Setup all tables
-npm run bootstrap setup
+1. **checkin-users**: User accounts and authentication
+2. **checkin-checkins**: Check-in sessions
+3. **checkin-responses**: User responses to check-ins
 
-# Setup specific table
-npm run bootstrap setup users
-npm run bootstrap setup checkins
-npm run bootstrap setup responses
-
-# Drop all tables (⚠️ destructive)
-npm run bootstrap drop
-
-# Drop specific table (⚠️ destructive)
-npm run bootstrap drop users
-
-# Verify all tables
-npm run bootstrap verify
-
-# List all tables
-npm run bootstrap list
-
-# Show help
-npm run bootstrap help
-```
-
-#### Individual Scripts
-
-```bash
-# Create Users Table
-npm run setup:users
-
-# Drop Users Table
-npm run drop:users
-
-# List All Tables
-npm run list:tables
-
-# Create All Tables (legacy)
-npm run setup:all
-```
-
-## 📊 Table Schemas
-
-### Users Table (`checkin-users`)
-
-- **Primary Key**: `id` (String)
-- **GSI 1**: `email-index` for email lookups
-- **GSI 2**: `role-index` for role-based queries
-
-### Check-ins Table (`checkin-checkins`) - Coming Soon
-
-- **Primary Key**: `id` (String)
-- **Sort Key**: `teamId` (String)
-
-### Responses Table (`checkin-responses`) - Coming Soon
-
-- **Primary Key**: `checkInId` (String)
-- **Sort Key**: `userId` (String)
-
-## 🔧 Scripts
-
-### Bootstrap Script
-
-- `bootstrap.ts` - Unified table management script (recommended)
-
-### Individual Scripts
-
-- `setup-users-table.ts` - Creates users table with indexes
-- `drop-users-table.ts` - Drops users table (⚠️ destructive)
-- `list-tables.ts` - Lists all tables with details
-
-### Helper Files
-
-- `helpers/dynamodb.ts` - Common DynamoDB operations
-- `helpers/table-configs.ts` - Table configurations and schemas
-
-## 🐛 Troubleshooting
-
-### LocalStack Not Running
-
-```bash
-docker-compose up localstack -d
-```
-
-### Permission Issues
-
-```bash
-# Check if LocalStack is accessible
-curl http://localhost:4566/health
-```
-
-### Table Already Exists
-
-Scripts will skip creation if tables already exist.
-
-## 📝 Environment Variables
-
-| Variable                | Default                 | Description               |
-| ----------------------- | ----------------------- | ------------------------- |
-| `AWS_ENDPOINT`          | `http://localhost:4566` | LocalStack endpoint       |
-| `AWS_REGION`            | `us-east-1`             | AWS region                |
-| `AWS_ACCESS_KEY_ID`     | `test`                  | Access key for LocalStack |
-| `AWS_SECRET_ACCESS_KEY` | `test`                  | Secret key for LocalStack |
+See `helpers/table-configs.ts` for detailed schema information.

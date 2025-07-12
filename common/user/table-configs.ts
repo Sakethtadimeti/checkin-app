@@ -10,6 +10,7 @@ export const usersTableConfig: TableConfig = {
     { AttributeName: "id", AttributeType: "S" }, // String type
     { AttributeName: "email", AttributeType: "S" },
     { AttributeName: "role", AttributeType: "S" },
+    { AttributeName: "managerId", AttributeType: "S" }, // ✅ Added for manager relationships
   ],
   globalSecondaryIndexes: [
     {
@@ -26,6 +27,17 @@ export const usersTableConfig: TableConfig = {
     {
       IndexName: "role-index",
       KeySchema: [{ AttributeName: "role", KeyType: "HASH" }],
+      Projection: {
+        ProjectionType: "ALL",
+      },
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 5,
+        WriteCapacityUnits: 5,
+      },
+    },
+    {
+      IndexName: "managerId-index", // ✅ Added for manager-team relationships
+      KeySchema: [{ AttributeName: "managerId", KeyType: "HASH" }],
       Projection: {
         ProjectionType: "ALL",
       },

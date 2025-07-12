@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Full-stack team check-in system with Docker and LocalStack",
   "scripts": {
-    "dev": "docker-compose up -d",
+    "dev": "docker-compose up -d --build auth-server",
     "stop": "docker-compose down"
   },
   "author": "Saketh Tadimeti",

@@ -24,6 +24,7 @@
     "ts-node-dev": "^2.0.0"
   },
   "dependencies": {
+    "@checkin-app/common": "file:../common",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",

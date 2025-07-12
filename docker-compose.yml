@@ -13,20 +13,20 @@ services:
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - checkin-network
+
 
   # Mock Authentication Server
   auth-server:
     build:
-      context: ./auth-server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: auth-server/Dockerfile
     container_name: checkin-auth-server
     ports:
       - "3001:3001"
     env_file:
-      - ./auth-server/env.example
-    volumes:
-      - ./auth-server:/app
-      - /app/node_modules
+      - auth-server/env.example
     depends_on:
       - localstack
     networks:

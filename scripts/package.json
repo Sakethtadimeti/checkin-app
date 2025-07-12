@@ -5,12 +5,13 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "bootstrap": "ts-node bootstrap.ts"
+    "bootstrap": "ts-node bootstrap.ts",
+    "add-user": "ts-node add-user.ts",
+    "remove-user": "ts-node remove-user.ts",
+    "list-users": "ts-node remove-user.ts -- --list"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.844.0",
-    "@aws-sdk/lib-dynamodb": "^3.844.0",
-    "dotenv": "^16.3.1"
+    "@checkin-app/common": "file:../common"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.6",

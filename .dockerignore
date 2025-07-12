@@ -1,0 +1,5 @@
+# Ignore all node_modules
+**/node_modules
+
+# Optional: Also ignore build artifacts and dotfiles
+**/dist
