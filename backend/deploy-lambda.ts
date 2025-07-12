@@ -51,18 +51,18 @@ const lambdaConfigs: LambdaConfig[] = [
     path: "/users",
     method: "GET",
   },
-  // {
-  //   name: "createCheckIn",
-  //   handler: "createCheckIn.handler",
-  //   path: "/checkins",
-  //   method: "POST",
-  // },
-  // {
-  //   name: "getCheckIns",
-  //   handler: "getCheckIns.handler",
-  //   path: "/checkins",
-  //   method: "GET",
-  // },
+  {
+    name: "createCheckIn",
+    handler: "createCheckIn.handler",
+    path: "/checkins",
+    method: "POST",
+  },
+  {
+    name: "submitResponse",
+    handler: "submitResponse.handler",
+    path: "/checkins/{checkInId}/responses/{userId}",
+    method: "POST",
+  },
 ];
 
 function wait(ms: number) {
@@ -191,20 +191,49 @@ async function getRootResource(apiId: string) {
 
 async function createApiResource(
   apiId: string,
-  parentId: string,
+  rootResourceId: string,
   config: LambdaConfig
 ) {
   const { name, path, method } = config;
-  const pathPart = path.replace(/^\//, "");
+  // Split path into segments, e.g. /checkins/{checkInId}/responses/{userId}
+  const segments = path.split("/").filter(Boolean);
+  let parentId = rootResourceId;
+  let resourceId = parentId;
+  let currentPath = "";
 
-  const resource = await apiGatewayClient.send(
-    new CreateResourceCommand({ restApiId: apiId, parentId, pathPart })
+  // Get all resources so we can check for existence
+  const { items: allResources } = await apiGatewayClient.send(
+    new GetResourcesCommand({ restApiId: apiId })
   );
 
+  for (const [i, segment] of segments.entries()) {
+    currentPath += "/" + segment;
+    // Check if this resource already exists
+    let resource = allResources?.find((r) => r.path === currentPath);
+    if (!resource) {
+      // Create the resource
+      const created = await apiGatewayClient.send(
+        new CreateResourceCommand({
+          restApiId: apiId,
+          parentId,
+          pathPart: segment,
+        })
+      );
+      resourceId = created.id!;
+      resource = { id: resourceId, path: currentPath };
+      // Add to allResources for next iteration
+      allResources?.push(resource as any);
+    } else {
+      resourceId = resource.id!;
+    }
+    parentId = resourceId;
+  }
+
+  // Attach method/integration to the final resource
   await apiGatewayClient.send(
     new PutMethodCommand({
       restApiId: apiId,
-      resourceId: resource.id!,
+      resourceId,
       httpMethod: method,
       authorizationType: "NONE",
     })
@@ -215,7 +244,7 @@ async function createApiResource(
   await apiGatewayClient.send(
     new PutIntegrationCommand({
       restApiId: apiId,
-      resourceId: resource.id!,
+      resourceId,
       httpMethod: method,
       type: "AWS_PROXY",
       integrationHttpMethod: "POST",

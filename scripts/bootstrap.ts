@@ -8,7 +8,6 @@ import {
   allTableConfigs,
   usersTableConfig,
   checkinsTableConfig,
-  responsesTableConfig,
   TABLE_NAMES,
 } from "@checkin-app/common";
 
@@ -53,9 +52,6 @@ async function setupTable(tableName: string): Promise<void> {
       break;
     case TABLE_NAMES.CHECKINS:
       config = checkinsTableConfig;
-      break;
-    case TABLE_NAMES.RESPONSES:
-      config = responsesTableConfig;
       break;
     default:
       console.error(`❌ Unknown table: ${tableName}`);
@@ -170,9 +166,8 @@ Examples:
   npm run bootstrap list
 
 Available tables:
-  - users (${TABLE_NAMES.USERS})
-  - checkins (${TABLE_NAMES.CHECKINS})
-  - responses (${TABLE_NAMES.RESPONSES})
+  - users
+  - checkins
 `);
 }
 

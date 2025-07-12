@@ -3,8 +3,7 @@ import { TableConfig } from "./dynamodb";
 // Table names for easy access
 export const TABLE_NAMES = {
   USERS: "users",
-  CHECKINS: "checkins",
-  RESPONSES: "responses",
+  CHECKINS: "checkins", // Single table for check-ins, assignments, and responses
 } as const;
 
 // Users table configuration
@@ -56,66 +55,25 @@ export const usersTableConfig: TableConfig = {
   ],
 };
 
-// Check-ins table configuration
+// Check-ins table configuration (Single Table Design)
 export const checkinsTableConfig: TableConfig = {
   tableName: TABLE_NAMES.CHECKINS,
   keySchema: [
-    { AttributeName: "id", KeyType: "HASH" }, // Partition key
-    { AttributeName: "teamId", KeyType: "RANGE" }, // Sort key
+    { AttributeName: "PK", KeyType: "HASH" }, // Partition key: checkin#<id>
+    { AttributeName: "SK", KeyType: "RANGE" }, // Sort key: meta, assignment#<userId>, response#<userId>
   ],
   attributeDefinitions: [
-    { AttributeName: "id", AttributeType: "S" },
-    { AttributeName: "teamId", AttributeType: "S" },
-    { AttributeName: "createdBy", AttributeType: "S" },
-    { AttributeName: "status", AttributeType: "S" },
-  ],
-  globalSecondaryIndexes: [
-    {
-      IndexName: "team-status-index",
-      KeySchema: [
-        { AttributeName: "teamId", KeyType: "HASH" },
-        { AttributeName: "status", KeyType: "RANGE" },
-      ],
-      Projection: {
-        ProjectionType: "ALL",
-      },
-      ProvisionedThroughput: {
-        ReadCapacityUnits: 5,
-        WriteCapacityUnits: 5,
-      },
-    },
-    {
-      IndexName: "created-by-index",
-      KeySchema: [{ AttributeName: "createdBy", KeyType: "HASH" }],
-      Projection: {
-        ProjectionType: "ALL",
-      },
-      ProvisionedThroughput: {
-        ReadCapacityUnits: 5,
-        WriteCapacityUnits: 5,
-      },
-    },
-  ],
-};
-
-// Responses table configuration
-export const responsesTableConfig: TableConfig = {
-  tableName: TABLE_NAMES.RESPONSES,
-  keySchema: [
-    { AttributeName: "checkInId", KeyType: "HASH" }, // Partition key
-    { AttributeName: "userId", KeyType: "RANGE" }, // Sort key
-  ],
-  attributeDefinitions: [
-    { AttributeName: "checkInId", AttributeType: "S" },
+    { AttributeName: "PK", AttributeType: "S" },
+    { AttributeName: "SK", AttributeType: "S" },
     { AttributeName: "userId", AttributeType: "S" },
-    { AttributeName: "submittedAt", AttributeType: "S" },
+    { AttributeName: "type", AttributeType: "S" },
   ],
   globalSecondaryIndexes: [
     {
-      IndexName: "user-responses-index",
+      IndexName: "user-type-index", // User-centric queries
       KeySchema: [
         { AttributeName: "userId", KeyType: "HASH" },
-        { AttributeName: "submittedAt", KeyType: "RANGE" },
+        { AttributeName: "type", KeyType: "RANGE" },
       ],
       Projection: {
         ProjectionType: "ALL",
@@ -132,5 +90,4 @@ export const responsesTableConfig: TableConfig = {
 export const allTableConfigs: TableConfig[] = [
   usersTableConfig,
   checkinsTableConfig,
-  responsesTableConfig,
 ];
