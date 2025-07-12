@@ -19,11 +19,6 @@
     "ts-node": "^10.9.1",
     "typescript": "^5.3.2"
   },
-  "keywords": [
-    "dynamodb",
-    "localstack",
-    "setup"
-  ],
-  "author": "Your Name",
+  "author": "saketh-tadimeti",
   "license": "MIT"
 }
