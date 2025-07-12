@@ -8,7 +8,8 @@
     "bootstrap": "ts-node bootstrap.ts",
     "add-user": "ts-node add-user.ts",
     "remove-user": "ts-node remove-user.ts",
-    "list-users": "ts-node remove-user.ts -- --list"
+    "list-users": "ts-node remove-user.ts -- --list",
+    "create-seed-users": "ts-node create-seed-users.ts"
   },
   "dependencies": {
     "@checkin-app/common": "file:../common"
