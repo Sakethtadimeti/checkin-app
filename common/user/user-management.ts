@@ -7,7 +7,7 @@ import {
   ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { User, CreateUserData, UserRole } from "./types";
 
 // Create DynamoDB client - this will be configured by the consuming package
@@ -37,7 +37,7 @@ function getDocClient(): DynamoDBDocumentClient {
 }
 
 /**
- * Hashes a password using bcrypt
+ * Hashes a password using bcrypt.js
  * @param password - The plain text password to hash
  * @returns Promise<string> - The hashed password
  */
@@ -47,7 +47,7 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 /**
- * Compares a plain text password with a hashed password
+ * Compares a plain text password with a hashed password using bcrypt.js
  * @param password - The plain text password
  * @param hash - The hashed password
  * @returns Promise<boolean> - True if passwords match

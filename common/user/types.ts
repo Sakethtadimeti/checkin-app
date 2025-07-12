@@ -4,7 +4,7 @@
 export interface User {
   id: string; // Primary key, UUID
   email: string; // Unique login identifier
-  passwordHash: string; // Hashed password (bcrypt)
+  passwordHash: string; // Hashed password (bcrypt.js)
   name: string; // Display name
   role: "manager" | "member"; // User role
   managerId?: string; // FK to manager's user ID (only for members)

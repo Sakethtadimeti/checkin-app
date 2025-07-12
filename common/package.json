@@ -11,13 +11,13 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.844.0",
     "@aws-sdk/lib-dynamodb": "^3.844.0",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
     "dotenv": "^16.3.1"
   },
   "devDependencies": {
-    "typescript": "^5.3.2",
     "@tsconfig/node20": "^20.1.6",
-    "@types/bcrypt": "^5.0.2"
+    "@types/node": "^24.0.13",
+    "typescript": "^5.3.2"
   },
   "keywords": [
     "checkin-app",
