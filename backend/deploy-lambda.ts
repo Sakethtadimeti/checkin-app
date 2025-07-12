@@ -58,10 +58,28 @@ const lambdaConfigs: LambdaConfig[] = [
     method: "POST",
   },
   {
+    name: "getCheckInsByManager",
+    handler: "getCheckInsByManager.handler",
+    path: "/checkins/manager/{createdBy}",
+    method: "GET",
+  },
+  {
+    name: "getAssignedCheckIns",
+    handler: "getAssignedCheckIns.handler",
+    path: "/checkins/assigned/{userId}",
+    method: "GET",
+  },
+  {
     name: "submitResponse",
     handler: "submitResponse.handler",
     path: "/checkins/{checkInId}/responses/{userId}",
     method: "POST",
+  },
+  {
+    name: "getCheckInDetails",
+    handler: "getCheckInDetails.handler",
+    path: "/checkins/{checkInId}/details",
+    method: "GET",
   },
 ];
 
@@ -151,7 +169,6 @@ async function deployLambda({ name, handler }: LambdaConfig) {
     } else {
       throw err;
     }
-    throw err;
   }
 }
 

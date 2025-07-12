@@ -7,7 +7,7 @@ import {
 } from "@checkin-app/common/checkin/types";
 import { TABLE_NAMES } from "@checkin-app/common/user/table-configs";
 import { PutCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { dynamodbClient, initializeDynamoDB } from "@checkin-app/common";
+import { initializeDynamoDB, dynamodbClient } from "@checkin-app/common";
 
 initializeDynamoDB(dynamodbClient);
 

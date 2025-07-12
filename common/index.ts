@@ -9,3 +9,6 @@ export * from "./user/dynamodb";
 
 // Export table configurations
 export * from "./user/table-configs";
+
+// Export check-in types
+export * from "./checkin/types";

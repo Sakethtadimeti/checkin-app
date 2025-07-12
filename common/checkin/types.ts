@@ -21,6 +21,14 @@ export interface Question {
 }
 
 /**
+ * Answer structure with question ID and response
+ */
+export interface Answer {
+  questionId: string; // References the question ID
+  response: string; // User's answer to the question
+}
+
+/**
  * Check-in data model interface (for CHECKIN type items)
  */
 export interface CheckIn {
@@ -40,7 +48,7 @@ export interface CheckIn {
 export interface CreateCheckInData {
   title: string;
   description?: string;
-  questions: Question[]; // Array of questions with IDs
+  questions: string[]; // Array of question strings (IDs will be generated)
   dueDate: string;
   createdBy: string;
   assignedUserIds: string[]; // Array of user IDs to assign this check-in to
@@ -96,14 +104,6 @@ export interface ResponseItem extends CheckInItem {
   answers: Answer[]; // Array of answers with question IDs
   submittedAt: string;
   updatedAt?: string;
-}
-
-/**
- * Answer structure with question ID and response
- */
-export interface Answer {
-  questionId: string; // References the question ID
-  response: string; // User's answer to the question
 }
 
 /**

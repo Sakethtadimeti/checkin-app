@@ -65,23 +65,28 @@ export const checkinsTableConfig: TableConfig = {
   attributeDefinitions: [
     { AttributeName: "PK", AttributeType: "S" },
     { AttributeName: "SK", AttributeType: "S" },
+    { AttributeName: "createdBy", AttributeType: "S" },
     { AttributeName: "userId", AttributeType: "S" },
     { AttributeName: "type", AttributeType: "S" },
   ],
   globalSecondaryIndexes: [
     {
-      IndexName: "user-type-index", // User-centric queries
+      IndexName: "created-by-index", // For: check-ins created by a manager
+      KeySchema: [
+        { AttributeName: "createdBy", KeyType: "HASH" },
+        { AttributeName: "type", KeyType: "RANGE" }, // must filter where type = "CHECKIN"
+      ],
+      Projection: { ProjectionType: "ALL" },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 },
+    },
+    {
+      IndexName: "user-type-index", // For: user-specific assignments/responses
       KeySchema: [
         { AttributeName: "userId", KeyType: "HASH" },
-        { AttributeName: "type", KeyType: "RANGE" },
+        { AttributeName: "type", KeyType: "RANGE" }, // ASSIGNMENT / RESPONSE
       ],
-      Projection: {
-        ProjectionType: "ALL",
-      },
-      ProvisionedThroughput: {
-        ReadCapacityUnits: 5,
-        WriteCapacityUnits: 5,
-      },
+      Projection: { ProjectionType: "ALL" },
+      ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 },
     },
   ],
 };
