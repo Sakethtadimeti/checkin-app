@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "build:lambda": "node build-lambda.js",
-    "deploy": "npm run build:lambda && npx ts-node deploy-lambda.ts",
+    "deploy": "npx ts-node deploy-lambda.ts",
     "dev": "ts-node-dev --respawn --transpile-only index.ts",
     "test": "test"
   },

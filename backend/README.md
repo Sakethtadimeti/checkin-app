@@ -26,7 +26,7 @@ docker-compose up -d
 
 ### getUsers Lambda
 
-Returns all users from the `checkin-users` DynamoDB table.
+Returns all users from the DynamoDB table.
 
 **Features:**
 

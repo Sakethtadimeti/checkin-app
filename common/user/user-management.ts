@@ -9,6 +9,7 @@ import {
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import bcrypt from "bcryptjs";
 import { User, CreateUserData, UserRole } from "./types";
+import { TABLE_NAMES } from "./table-configs";
 
 // Create DynamoDB client - this will be configured by the consuming package
 let dynamodbClient: DynamoDBClient | null = null;
@@ -131,7 +132,7 @@ export async function createUser(userData: CreateUserData): Promise<User> {
   // Store user in DynamoDB
   await getDocClient().send(
     new PutCommand({
-      TableName: "checkin-users",
+      TableName: TABLE_NAMES.USERS,
       Item: user,
     })
   );
@@ -148,7 +149,7 @@ export async function findUserByEmail(email: string): Promise<User | null> {
   try {
     const result = await getDocClient().send(
       new QueryCommand({
-        TableName: "checkin-users",
+        TableName: TABLE_NAMES.USERS,
         IndexName: "email-index",
         KeyConditionExpression: "email = :email",
         ExpressionAttributeValues: {
@@ -173,7 +174,7 @@ export async function findUserById(id: string): Promise<User | null> {
   try {
     const result = await getDocClient().send(
       new GetCommand({
-        TableName: "checkin-users",
+        TableName: TABLE_NAMES.USERS,
         Key: { id },
       })
     );
@@ -213,7 +214,7 @@ export async function userExists(email: string): Promise<boolean> {
     // Try to query by email using the email-index GSI
     const result = await getDocClient().send(
       new QueryCommand({
-        TableName: "checkin-users",
+        TableName: TABLE_NAMES.USERS,
         IndexName: "email-index",
         KeyConditionExpression: "email = :email",
         ExpressionAttributeValues: {
@@ -239,7 +240,7 @@ export async function removeUserById(id: string): Promise<boolean> {
   try {
     const result = await getDocClient().send(
       new DeleteCommand({
-        TableName: "checkin-users",
+        TableName: TABLE_NAMES.USERS,
         Key: { id },
         ReturnValues: "ALL_OLD",
       })
@@ -280,7 +281,7 @@ export async function getAllUsers(): Promise<User[]> {
   try {
     const result = await getDocClient().send(
       new ScanCommand({
-        TableName: "checkin-users",
+        TableName: TABLE_NAMES.USERS,
       })
     );
     return (result.Items || []) as User[];
@@ -307,7 +308,7 @@ export async function removeAllUsers(): Promise<number> {
     const deletePromises = users.map((user) =>
       getDocClient().send(
         new DeleteCommand({
-          TableName: "checkin-users",
+          TableName: TABLE_NAMES.USERS,
           Key: { id: user.id },
         })
       )
@@ -330,7 +331,7 @@ export async function hasTeamMembers(managerId: string): Promise<boolean> {
   try {
     const result = await getDocClient().send(
       new QueryCommand({
-        TableName: "checkin-users",
+        TableName: TABLE_NAMES.USERS,
         IndexName: "managerId-index",
         KeyConditionExpression: "managerId = :managerId",
         ExpressionAttributeValues: {

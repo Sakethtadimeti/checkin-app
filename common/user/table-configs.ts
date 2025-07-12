@@ -1,8 +1,15 @@
 import { TableConfig } from "./dynamodb";
 
+// Table names for easy access
+export const TABLE_NAMES = {
+  USERS: "users",
+  CHECKINS: "checkins",
+  RESPONSES: "responses",
+} as const;
+
 // Users table configuration
 export const usersTableConfig: TableConfig = {
-  tableName: "checkin-users",
+  tableName: TABLE_NAMES.USERS,
   keySchema: [
     { AttributeName: "id", KeyType: "HASH" }, // Partition key
   ],
@@ -51,7 +58,7 @@ export const usersTableConfig: TableConfig = {
 
 // Check-ins table configuration
 export const checkinsTableConfig: TableConfig = {
-  tableName: "checkin-checkins",
+  tableName: TABLE_NAMES.CHECKINS,
   keySchema: [
     { AttributeName: "id", KeyType: "HASH" }, // Partition key
     { AttributeName: "teamId", KeyType: "RANGE" }, // Sort key
@@ -93,7 +100,7 @@ export const checkinsTableConfig: TableConfig = {
 
 // Responses table configuration
 export const responsesTableConfig: TableConfig = {
-  tableName: "checkin-responses",
+  tableName: TABLE_NAMES.RESPONSES,
   keySchema: [
     { AttributeName: "checkInId", KeyType: "HASH" }, // Partition key
     { AttributeName: "userId", KeyType: "RANGE" }, // Sort key
@@ -127,10 +134,3 @@ export const allTableConfigs: TableConfig[] = [
   checkinsTableConfig,
   responsesTableConfig,
 ];
-
-// Table names for easy access
-export const TABLE_NAMES = {
-  USERS: "checkin-users",
-  CHECKINS: "checkin-checkins",
-  RESPONSES: "checkin-responses",
-} as const;

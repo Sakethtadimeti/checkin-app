@@ -87,8 +87,8 @@ The scripts use environment variables for AWS/LocalStack configuration. Create a
 
 The scripts create three DynamoDB tables:
 
-1. **checkin-users**: User accounts and authentication
-2. **checkin-checkins**: Check-in sessions
-3. **checkin-responses**: User responses to check-ins
+1. **users**: User accounts and authentication
+2. **checkins**: Check-in sessions
+3. **responses**: User responses to check-ins
 
 See `helpers/table-configs.ts` for detailed schema information.

@@ -4,6 +4,7 @@ import {
   UpdateFunctionConfigurationCommand,
   GetFunctionCommand,
   AddPermissionCommand,
+  CreateFunctionCommand,
 } from "@aws-sdk/client-lambda";
 import {
   APIGatewayClient,
@@ -126,7 +127,30 @@ async function deployLambda({ name, handler }: LambdaConfig) {
 
     console.log(`\u{1F501} Updated Lambda: ${name}`);
   } catch (err: any) {
-    console.log(`\u{1F195} Created Lambda: ${name}`);
+    // Handle the case where the lambda does not exist
+    if (err.name === "ResourceNotFoundException") {
+      await lambdaClient.send(
+        new CreateFunctionCommand({
+          FunctionName: name,
+          Runtime: "nodejs20.x",
+          Role: "arn:aws:iam::000000000000:role/lambda-role", // dummy
+          Handler: handler,
+          Code: { ZipFile: zipBuffer },
+          Environment: {
+            Variables: {
+              AWS_ENDPOINT: "http://localstack:4566",
+              AWS_REGION: region,
+              AWS_ACCESS_KEY_ID: "test",
+              AWS_SECRET_ACCESS_KEY: "test",
+            },
+          },
+        })
+      );
+      await wait(1000);
+      console.log(`🆕 Created Lambda: ${name}`);
+    } else {
+      throw err;
+    }
     throw err;
   }
 }

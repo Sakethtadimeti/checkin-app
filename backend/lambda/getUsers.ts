@@ -9,7 +9,7 @@ import {
 initializeDynamoDB(dynamodbClient);
 
 /**
- * Lambda handler to get all users from the checkin-users table
+ * Lambda handler to get all users from the TABLE_NAMES.USERS table
  * @param event - API Gateway event
  * @returns Promise<APIGatewayProxyResult> - Response with users data
  */
@@ -17,12 +17,7 @@ export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   try {
-    console.log("📋 Getting all users from checkin-users table...");
-    console.log("🔧 DynamoDB endpoint:", process.env.AWS_ENDPOINT);
-    console.log("🌍 AWS Region:", process.env.AWS_REGION);
-
     const users = await getAllUsers();
-    console.log("📊 Raw users result:", users);
 
     // Remove sensitive data before returning
     const safeUsers = users.map((user: any) => ({
