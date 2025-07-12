@@ -2,12 +2,15 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import jwt from "jsonwebtoken";
+import { z } from "zod";
 import {
   authenticateUser,
   findUserById,
   getAllUsers,
   initializeDynamoDB,
   dynamodbClient,
+  LoginSchema,
+  createValidationErrorResponse,
 } from "@checkin-app/common";
 
 // Initialize the common package with DynamoDB client
@@ -47,15 +50,9 @@ app.get("/health", (req, res) => {
  */
 app.post("/api/v1/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    // Basic validation
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Email and password are required",
-      });
-    }
+    // Validate request body using Zod schema
+    const validatedData = LoginSchema.parse(req.body);
+    const { email, password } = validatedData;
 
     // Authenticate user using the common package
     console.log(`🔍 Attempting to authenticate user: ${email}`);
@@ -109,6 +106,12 @@ app.post("/api/v1/login", async (req, res) => {
       },
     });
   } catch (error) {
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      return createValidationErrorResponse(error);
+    }
+
+    // Handle other errors
     console.error("Login error:", error);
     res.status(500).json({
       success: false,

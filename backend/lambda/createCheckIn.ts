@@ -1,13 +1,20 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { z } from "zod";
 import { createCheckInHelper } from "./helpers/checkin";
-import { initializeDynamoDB } from "@checkin-app/common";
-import { dynamodbClient } from "@checkin-app/common";
+import {
+  initializeDynamoDB,
+  dynamodbClient,
+  CreateCheckInSchema,
+  createValidationErrorResponse,
+} from "@checkin-app/common";
+
 initializeDynamoDB(dynamodbClient);
 
 export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   try {
+    // Check if request body exists
     if (!event.body) {
       return {
         statusCode: 400,
@@ -18,70 +25,31 @@ export const handler = async (
         body: JSON.stringify({ error: "Request body is required" }),
       };
     }
-    const requestBody = JSON.parse(event.body);
-    const {
-      title,
-      description,
-      questions,
-      dueDate,
-      createdBy,
-      assignedUserIds,
-    } = requestBody;
-    if (!title || !questions || !dueDate || !createdBy || !assignedUserIds) {
+
+    // Parse and validate request body
+    let requestBody;
+    try {
+      requestBody = JSON.parse(event.body);
+    } catch (parseError) {
       return {
         statusCode: 400,
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
         },
-        body: JSON.stringify({
-          error:
-            "Missing required fields: title, questions, dueDate, createdBy, assignedUserIds",
-        }),
+        body: JSON.stringify({ error: "Invalid JSON in request body" }),
       };
     }
-    if (
-      !Array.isArray(questions) ||
-      !questions.every((q) => typeof q === "string")
-    ) {
-      return {
-        statusCode: 400,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-        body: JSON.stringify({
-          error: "Questions must be an array of strings",
-        }),
-      };
-    }
-    if (
-      !Array.isArray(assignedUserIds) ||
-      !assignedUserIds.every((id) => typeof id === "string")
-    ) {
-      return {
-        statusCode: 400,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-        body: JSON.stringify({
-          error: "assignedUserIds must be an array of strings",
-        }),
-      };
-    }
-    const checkInData = {
-      title,
-      description,
-      questions,
-      dueDate,
-      createdBy,
-      assignedUserIds,
-    };
+
+    // Validate the request data using Zod schema
+    const validatedData = CreateCheckInSchema.parse(requestBody);
+
+    // Create the check-in
     const createdCheckIn = await createCheckInHelper(
       dynamodbClient,
-      checkInData
+      validatedData
     );
+
     return {
       statusCode: 201,
       headers: {
@@ -89,11 +57,19 @@ export const handler = async (
         "Access-Control-Allow-Origin": "*",
       },
       body: JSON.stringify({
+        success: true,
         message: "Check-in created successfully",
         checkIn: createdCheckIn,
       }),
     };
   } catch (error: any) {
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      return createValidationErrorResponse(error);
+    }
+
+    // Handle other errors
+    console.error("Error creating check-in:", error);
     return {
       statusCode: 500,
       headers: {
@@ -101,6 +77,7 @@ export const handler = async (
         "Access-Control-Allow-Origin": "*",
       },
       body: JSON.stringify({
+        success: false,
         error: "Failed to create check-in",
         details: error.message,
       }),

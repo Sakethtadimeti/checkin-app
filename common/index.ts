@@ -12,3 +12,6 @@ export * from "./user/table-configs";
 
 // Export check-in types
 export * from "./checkin/types";
+
+// Export validation schemas
+export * from "./checkin/validation";

@@ -7,6 +7,7 @@ import {
   initializeDynamoDB,
   logEnvironment,
   dynamodbClient,
+  CreateUserSchema,
 } from "@checkin-app/common";
 
 // Initialize DynamoDB client for the common package
@@ -37,7 +38,7 @@ Note: Members must have a managerId, managers cannot have a managerId.
 }
 
 /**
- * Validates command line arguments
+ * Validates command line arguments using Zod schema
  */
 function validateArgs(args: string[]): {
   email: string;
@@ -52,42 +53,28 @@ function validateArgs(args: string[]): {
 
   const [email, password, name, role, managerId] = args;
 
-  // Validate email
-  if (!isValidEmail(email)) {
-    throw new Error(`Invalid email format: ${email}`);
-  }
-
-  // Validate password
-  if (password.length < 6) {
-    throw new Error("Password must be at least 6 characters long");
-  }
-
-  // Validate name
-  if (name.trim().length === 0) {
-    throw new Error("Name cannot be empty");
-  }
-
-  // Validate role
-  if (role !== "manager" && role !== "member") {
-    throw new Error(`Invalid role: ${role}. Must be 'manager' or 'member'`);
-  }
-
-  // Validate managerId based on role
-  if (role === "member" && !managerId) {
-    throw new Error("Members must have a managerId");
-  }
-
-  if (role === "manager" && managerId) {
-    throw new Error("Managers cannot have a managerId");
-  }
-
-  return {
+  // Prepare data for validation
+  const userData = {
     email: email.toLowerCase().trim(),
     password,
     name: name.trim(),
-    role,
+    role: role as "manager" | "member",
     managerId: managerId?.trim(),
   };
+
+  // Validate using Zod schema
+  const validatedData = CreateUserSchema.parse(userData);
+
+  // Additional business logic validation
+  if (validatedData.role === "member" && !validatedData.managerId) {
+    throw new Error("Members must have a managerId");
+  }
+
+  if (validatedData.role === "manager" && validatedData.managerId) {
+    throw new Error("Managers cannot have a managerId");
+  }
+
+  return validatedData;
 }
 
 /**
