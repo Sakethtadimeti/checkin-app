@@ -2,6 +2,13 @@
 
 A full-stack, cloud-native application that allows **managers** to create team check-ins and **team members** to respond. Built with TypeScript, Node.js, React, and AWS services emulated locally using LocalStack.
 
+## DEMO
+
+<video width="100%" controls>
+  <source src="demo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 ## 🚀 Quick Start
 
 ### Prerequisites
