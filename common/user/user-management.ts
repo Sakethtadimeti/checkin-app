@@ -5,6 +5,7 @@ import {
   QueryCommand,
   DeleteCommand,
   ScanCommand,
+  BatchGetCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import bcrypt from "bcryptjs";
@@ -182,6 +183,46 @@ export async function findUserById(id: string): Promise<User | null> {
   } catch (error: any) {
     console.warn("⚠️  Could not find user by ID:", error.message);
     return null;
+  }
+}
+
+/**
+ * Finds multiple users by their IDs using batch get
+ * @param ids - Array of user IDs to search for
+ * @returns Promise<User[]> - Array of found users
+ */
+export async function findUsersByIds(ids: string[]): Promise<User[]> {
+  if (ids.length === 0) {
+    return [];
+  }
+
+  try {
+    // DynamoDB BatchGet has a limit of 100 items per request
+    const batchSize = 100;
+    const users: User[] = [];
+
+    for (let i = 0; i < ids.length; i += batchSize) {
+      const batchIds = ids.slice(i, i + batchSize);
+
+      const result = await getDocClient().send(
+        new BatchGetCommand({
+          RequestItems: {
+            [TABLE_NAMES.USERS]: {
+              Keys: batchIds.map((id) => ({ id })),
+            },
+          },
+        })
+      );
+
+      const batchUsers = (result.Responses?.[TABLE_NAMES.USERS] ||
+        []) as User[];
+      users.push(...batchUsers);
+    }
+
+    return users;
+  } catch (error: any) {
+    console.warn("⚠️  Could not find users by IDs:", error.message);
+    return [];
   }
 }
 

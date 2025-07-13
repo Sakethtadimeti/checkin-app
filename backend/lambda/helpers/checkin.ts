@@ -5,6 +5,7 @@ import {
   BatchWriteCommand,
   BatchGetCommand,
 } from "@aws-sdk/lib-dynamodb";
+import { findUsersByIds } from "@checkin-app/common";
 import {
   CheckInItemType,
   AssignmentStatus,
@@ -292,18 +293,34 @@ export async function getCheckInDetailsHelper(
     updatedAt: checkInResult.Item.updatedAt,
   };
 
-  // Clean up assignments to only include relevant fields
-  const cleanAssignments = assignments.map((assignment) => ({
-    userId: assignment.userId,
-    status: assignment.status,
-    assignedAt: assignment.assignedAt,
-    assignedBy: assignment.assignedBy,
-    completedAt: assignment.completedAt,
-  }));
+  // Get all unique user IDs from assignments
+  const userIds = [
+    ...new Set(assignments.map((assignment) => assignment.userId)),
+  ];
+
+  // Fetch all user details in a single batch operation
+  const users = await findUsersByIds(userIds);
+
+  // Create a map for quick lookup
+  const userMap = new Map(users.map((user) => [user.id, user]));
+
+  // Map assignments with user details
+  const userDetails = assignments.map((assignment) => {
+    const user = userMap.get(assignment.userId);
+    return {
+      userId: assignment.userId,
+      userName: user?.name || "Unknown User",
+      userEmail: user?.email || "unknown@example.com",
+      status: assignment.status,
+      assignedAt: assignment.assignedAt,
+      assignedBy: assignment.assignedBy,
+      completedAt: assignment.completedAt,
+    };
+  });
 
   return {
     checkIn,
-    assignments: cleanAssignments,
+    assignments: userDetails,
     statusCounts: finalStatusCounts,
   };
 }
