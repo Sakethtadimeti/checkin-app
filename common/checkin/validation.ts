@@ -64,9 +64,9 @@ export const AnswerSchema = z.object({
 });
 
 /**
- * Schema for creating a new check-in
+ * Schema for creating a new check-in (request body - excludes createdBy)
  */
-export const CreateCheckInSchema = z.object({
+export const CreateCheckInRequestSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
   description: z.string().max(1000, "Description too long").optional(),
   questions: z
@@ -81,7 +81,6 @@ export const CreateCheckInSchema = z.object({
   dueDate: z
     .string()
     .datetime({ message: "Invalid date format - must be ISO 8601" }),
-  createdBy: z.uuid("Invalid user ID"),
   assignedUserIds: z
     .array(z.uuid("Invalid user ID"))
     .min(1, "At least one user must be assigned")
@@ -190,7 +189,9 @@ export const CheckInResponseParamsSchema = z.object({
 export type ValidatedCreateUserData = z.infer<typeof CreateUserSchema>;
 export type ValidatedLoginData = z.infer<typeof LoginSchema>;
 export type ValidatedUpdateUserData = z.infer<typeof UpdateUserSchema>;
-export type ValidatedCreateCheckInData = z.infer<typeof CreateCheckInSchema>;
+export type ValidatedCreateCheckInRequestData = z.infer<
+  typeof CreateCheckInRequestSchema
+>;
 export type ValidatedUpdateCheckInData = z.infer<typeof UpdateCheckInSchema>;
 export type ValidatedSubmitResponseData = z.infer<typeof SubmitResponseSchema>;
 export type ValidatedPaginationParams = z.infer<typeof PaginationSchema>;

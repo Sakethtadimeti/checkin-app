@@ -143,6 +143,7 @@ async function deployLambda({ name, handler }: LambdaConfig) {
             AWS_ACCESS_KEY_ID: "test",
             AWS_SECRET_ACCESS_KEY: "test",
             AWS_ENDPOINT: "http://localstack:4566",
+            JWT_SECRET: "your-super-secret-jwt-key-change-in-production",
           },
         },
       })
@@ -166,6 +167,7 @@ async function deployLambda({ name, handler }: LambdaConfig) {
               AWS_REGION: region,
               AWS_ACCESS_KEY_ID: "test",
               AWS_SECRET_ACCESS_KEY: "test",
+              JWT_SECRET: "your-super-secret-jwt-key-change-in-production",
             },
           },
         })

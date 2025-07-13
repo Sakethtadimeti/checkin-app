@@ -15,3 +15,6 @@ export * from "./checkin/types";
 
 // Export validation schemas
 export * from "./checkin/validation";
+
+// Export JWT validation utilities
+export * from "./auth/jwt-validation";

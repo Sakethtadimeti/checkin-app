@@ -4,14 +4,16 @@ import { createCheckInHelper } from "./helpers/checkin";
 import {
   initializeDynamoDB,
   dynamodbClient,
-  CreateCheckInSchema,
+  CreateCheckInRequestSchema,
   createValidationErrorResponse,
 } from "@checkin-app/common";
+import { withManagerRole } from "./helpers/auth";
 
 initializeDynamoDB(dynamodbClient);
 
-export const handler = async (
-  event: APIGatewayProxyEvent
+const createCheckInHandler = async (
+  event: APIGatewayProxyEvent,
+  user: { id: string; email: string; role: string }
 ): Promise<APIGatewayProxyResult> => {
   try {
     // Check if request body exists
@@ -41,8 +43,14 @@ export const handler = async (
       };
     }
 
-    // Validate the request data using Zod schema
-    const validatedData = CreateCheckInSchema.parse(requestBody);
+    // Validate the request data using Zod schema (excluding createdBy)
+    const validatedRequestData = CreateCheckInRequestSchema.parse(requestBody);
+
+    // Combine request data with user ID from JWT token
+    const validatedData = {
+      ...validatedRequestData,
+      createdBy: user.id,
+    };
 
     // Create the check-in
     const createdCheckIn = await createCheckInHelper(
@@ -59,7 +67,9 @@ export const handler = async (
       body: JSON.stringify({
         success: true,
         message: "Check-in created successfully",
-        checkIn: createdCheckIn,
+        data: {
+          checkIn: createdCheckIn,
+        },
       }),
     };
   } catch (error: any) {
@@ -79,8 +89,10 @@ export const handler = async (
       body: JSON.stringify({
         success: false,
         error: "Failed to create check-in",
-        details: error.message,
+        details: error.message || "Unknown error",
       }),
     };
   }
 };
+
+export const handler = withManagerRole(createCheckInHandler);
