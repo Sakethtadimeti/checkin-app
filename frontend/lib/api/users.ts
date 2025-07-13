@@ -19,20 +19,6 @@ export interface UserListData {
 
 // Users API calls
 export const userApi = {
-  // Get all users
-  getUsers: async (): Promise<BaseResponse<UserListData>> => {
-    return authenticatedCall(`${API_URLS.APP_BASE_URL}${API_URLS.USERS}`, {
-      method: "GET",
-    });
-  },
-
-  // Get current user profile
-  getCurrentUser: async (): Promise<BaseResponse<UserData>> => {
-    return authenticatedCall(`${API_URLS.APP_BASE_URL}${API_URLS.USERS}/me`, {
-      method: "GET",
-    });
-  },
-
   // Get users by manager (for manager role)
   getUsersByManager: async (): Promise<BaseResponse<UserListData>> => {
     return authenticatedCall(
