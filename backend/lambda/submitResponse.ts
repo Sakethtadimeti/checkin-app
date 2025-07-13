@@ -11,9 +11,10 @@ import {
   initializeDynamoDB,
   dynamodbClient,
   SubmitResponseSchema,
-  CheckInResponseParamsSchema,
+  CheckInIdParamSchema,
   createValidationErrorResponse,
 } from "@checkin-app/common";
+import { withJWTValidation } from "./helpers/auth";
 
 initializeDynamoDB(dynamodbClient);
 
@@ -27,8 +28,9 @@ function createAssignmentSK(userId: string) {
   return `assignment#${userId}`;
 }
 
-export const handler = async (
-  event: APIGatewayProxyEvent
+const submitResponseHandler = async (
+  event: APIGatewayProxyEvent,
+  user: { id: string; email: string; role: string }
 ): Promise<APIGatewayProxyResult> => {
   try {
     // Extract and validate path parameters
@@ -36,22 +38,25 @@ export const handler = async (
     if (!pathParams) {
       return {
         statusCode: 400,
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          success: false,
           error: "Path parameters are required",
         }),
       };
     }
 
-    const validatedPathParams = CheckInResponseParamsSchema.parse(pathParams);
-    const { checkInId, userId } = validatedPathParams;
+    const validatedPathParams = CheckInIdParamSchema.parse(pathParams);
+    const { checkInId } = validatedPathParams;
+
+    // Use the user ID from the JWT token
+    const userId = user.id;
 
     // Parse and validate request body
     if (!event.body) {
       return {
         statusCode: 400,
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          success: false,
           error: "Request body is required",
         }),
       };
@@ -103,12 +108,14 @@ export const handler = async (
 
     return {
       statusCode: 201,
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        success: true,
         message: "Response submitted successfully",
-        checkInId,
-        userId,
-        submittedAt: now,
+        data: {
+          checkInId,
+          userId,
+          submittedAt: now,
+        },
       }),
     };
   } catch (error: any) {
@@ -120,11 +127,13 @@ export const handler = async (
 
     return {
       statusCode: 500,
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        success: false,
         error: "Internal server error",
         message: error.message,
       }),
     };
   }
 };
+
+export const handler = withJWTValidation(submitResponseHandler);

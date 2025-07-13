@@ -60,19 +60,19 @@ const lambdaConfigs: LambdaConfig[] = [
   {
     name: "getCheckInsByManager",
     handler: "getCheckInsByManager.handler",
-    path: "/checkins/manager/{createdBy}",
+    path: "/checkins/manager",
     method: "GET",
   },
   {
     name: "getAssignedCheckIns",
     handler: "getAssignedCheckIns.handler",
-    path: "/checkins/assigned/{userId}",
+    path: "/checkins/assigned",
     method: "GET",
   },
   {
     name: "submitResponse",
     handler: "submitResponse.handler",
-    path: "/checkins/{checkInId}/responses/{userId}",
+    path: "/checkins/{checkInId}/responses",
     method: "POST",
   },
   {

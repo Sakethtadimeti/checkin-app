@@ -7,12 +7,14 @@ import {
   CheckInIdParamSchema,
   createValidationErrorResponse,
 } from "@checkin-app/common";
+import { withJWTValidation } from "./helpers/auth";
 
 // Initialize the common utilities with our DynamoDB client
 initializeDynamoDB(dynamodbClient);
 
-export const handler = async (
-  event: APIGatewayProxyEvent
+const getCheckInDetailsHandler = async (
+  event: APIGatewayProxyEvent,
+  user: { id: string; email: string; role: string }
 ): Promise<APIGatewayProxyResult> => {
   try {
     // Validate path parameters
@@ -20,11 +22,10 @@ export const handler = async (
     if (!pathParams) {
       return {
         statusCode: 400,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-        body: JSON.stringify({ error: "Path parameters are required" }),
+        body: JSON.stringify({
+          success: false,
+          error: "Path parameters are required",
+        }),
       };
     }
 
@@ -38,11 +39,11 @@ export const handler = async (
 
     return {
       statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify(checkInDetails),
+      body: JSON.stringify({
+        success: true,
+        message: "Check-in details fetched successfully",
+        data: checkInDetails,
+      }),
     };
   } catch (error: any) {
     // Handle Zod validation errors
@@ -54,10 +55,6 @@ export const handler = async (
     console.error("❌ Error getting check-in details:", error);
     return {
       statusCode: 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
       body: JSON.stringify({
         success: false,
         error: "Failed to get check-in details",
@@ -66,3 +63,5 @@ export const handler = async (
     };
   }
 };
+
+export const handler = withJWTValidation(getCheckInDetailsHandler);
