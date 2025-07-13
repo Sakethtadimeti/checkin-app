@@ -10,12 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { If } from "@/components/ui/If";
 import { useAuth } from "@/components/auth-context";
+import { ManagerDashboard } from "@/components/manager-dashboard";
+import { MemberDashboard } from "@/components/member-dashboard";
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
-  console.log("user", user);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -52,10 +54,9 @@ export default function DashboardPage() {
         <div className="px-4 py-6 sm:px-0">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="mt-1 text-sm text-gray-600">
+              <h1 className="text-3xl font-bold text-gray-900">
                 Welcome back, {user?.name}!
-              </p>
+              </h1>
             </div>
             <Button
               onClick={handleLogout}
@@ -67,56 +68,13 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* User Info Card */}
-        <div className="px-4 py-6 sm:px-0">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Information</CardTitle>
-              <CardDescription>Your account details</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Name
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900">{user?.name}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Email
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900">{user?.email}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">
-                    Role
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900 capitalize">
-                    {user?.role}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Placeholder for future content */}
-        <div className="px-4 py-6 sm:px-0">
-          <Card>
-            <CardHeader>
-              <CardTitle>Check-ins</CardTitle>
-              <CardDescription>
-                Manage your check-ins and responses
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                Check-in functionality will be implemented here.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Role-based Dashboard Content */}
+        <If condition={!!user && user.role === "manager"}>
+          <ManagerDashboard userId={user!.id} />
+        </If>
+        <If condition={!!user && user.role !== "manager"}>
+          <MemberDashboard userId={user!.id} />
+        </If>
       </div>
     </div>
   );

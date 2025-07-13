@@ -3,6 +3,7 @@ import type {
   CheckinData,
   CheckinListData,
   CheckinResponseData,
+  AssignedCheckinListData,
 } from "../../types/checkin";
 import { API_URLS } from "./types";
 import { createAuthenticatedCall } from "./utils";
@@ -12,6 +13,20 @@ const authenticatedCall = createAuthenticatedCall<any>();
 
 // Checkin API calls
 export const checkinApi = {
+  // Create a new checkin
+  createCheckIn: async (data: {
+    title: string;
+    description: string;
+    questions: string[];
+    dueDate?: string;
+    assignedUserIds: string[];
+  }): Promise<BaseResponse<CheckinData>> => {
+    return authenticatedCall(`${API_URLS.APP_BASE_URL}${API_URLS.CHECKINS}`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
   // Get all checkins
   getCheckIns: async (): Promise<BaseResponse<CheckinListData>> => {
     return authenticatedCall(`${API_URLS.APP_BASE_URL}${API_URLS.CHECKINS}`, {
@@ -32,19 +47,21 @@ export const checkinApi = {
   // Submit checkin responses
   submitCheckIn: async (
     checkinId: string,
-    responses: Array<{ questionId: string; answer: string | number | boolean }>
+    responses: Array<{ questionId: string; response: string }>
   ): Promise<BaseResponse<CheckinResponseData>> => {
     return authenticatedCall(
-      `${API_URLS.APP_BASE_URL}${API_URLS.CHECKINS}/${checkinId}/submit`,
+      `${API_URLS.APP_BASE_URL}${API_URLS.CHECKINS}/${checkinId}/responses`,
       {
         method: "POST",
-        body: JSON.stringify({ responses }),
+        body: JSON.stringify({ answers: responses }),
       }
     );
   },
 
-  // Get assigned checkins for current user
-  getAssignedCheckIns: async (): Promise<BaseResponse<CheckinListData>> => {
+  // Get assigned checkins for current user (members)
+  getAssignedCheckIns: async (): Promise<
+    BaseResponse<AssignedCheckinListData>
+  > => {
     return authenticatedCall(
       `${API_URLS.APP_BASE_URL}${API_URLS.CHECKINS}/assigned`,
       {
@@ -53,10 +70,10 @@ export const checkinApi = {
     );
   },
 
-  // Get checkins created by current user (for managers)
-  getCreatedCheckIns: async (): Promise<BaseResponse<CheckinListData>> => {
+  // Get checkins created by current user (managers)
+  getManagerCheckIns: async (): Promise<BaseResponse<CheckinListData>> => {
     return authenticatedCall(
-      `${API_URLS.APP_BASE_URL}${API_URLS.CHECKINS}/created`,
+      `${API_URLS.APP_BASE_URL}${API_URLS.CHECKINS}/manager`,
       {
         method: "GET",
       }

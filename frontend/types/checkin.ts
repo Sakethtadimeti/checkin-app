@@ -1,15 +1,16 @@
 import { z } from "zod";
 import type { BaseResponse } from "./auth";
 
-// Checkin data types
+// Checkin data types based on actual API response
 export interface CheckinData {
   id: string;
   title: string;
   description?: string;
   questions: CheckinQuestion[];
-  assignedTo: string[];
   dueDate?: string;
-  status: "active" | "completed" | "expired";
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CheckinResponseData {
@@ -18,20 +19,35 @@ export interface CheckinResponseData {
 }
 
 export interface CheckinListData {
-  checkins: CheckinData[];
+  checkIns: CheckinData[];
+  count: number;
+}
+
+// Assigned check-ins response structure
+export interface AssignedCheckinItem {
+  checkIn: CheckinData;
+  assignment: {
+    status: "pending" | "completed" | "overdue";
+    assignedAt: string;
+    assignedBy: string;
+  };
+}
+
+export interface AssignedCheckinListData {
+  assignedCheckIns: AssignedCheckinItem[];
+  count: number;
 }
 
 // API response types
 export type CheckinResponse = BaseResponse<CheckinData>;
 export type CheckinListResponse = BaseResponse<CheckinListData>;
+export type AssignedCheckinListResponse = BaseResponse<AssignedCheckinListData>;
 export type SubmitCheckinResponse = BaseResponse<CheckinResponseData>;
 
 // Zod schemas for validation
 export const checkinQuestionSchema = z.object({
   id: z.string(),
-  question: z.string(),
-  type: z.enum(["text", "number", "boolean", "select"]),
-  options: z.array(z.string()).optional(),
+  textContent: z.string(),
 });
 
 export const checkinDataSchema = z.object({
@@ -39,9 +55,10 @@ export const checkinDataSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
   questions: z.array(checkinQuestionSchema),
-  assignedTo: z.array(z.string()),
   dueDate: z.string().optional(),
-  status: z.enum(["active", "completed", "expired"]),
+  createdBy: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 });
 
 export const checkinResponseItemSchema = z.object({
@@ -55,7 +72,8 @@ export const checkinResponseDataSchema = z.object({
 });
 
 export const checkinListDataSchema = z.object({
-  checkins: z.array(checkinDataSchema),
+  checkIns: z.array(checkinDataSchema),
+  count: z.number(),
 });
 
 // Inferred types from schemas

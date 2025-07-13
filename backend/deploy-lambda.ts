@@ -22,6 +22,9 @@ import {
 import { readFileSync } from "fs";
 import { join } from "path";
 
+// Accessing localstack from the host machine
+// so the endpoint is the host machine's ip address
+// TODO: read from env file
 const endpoint = "http://localhost:4566";
 const region = "us-east-1";
 const credentials = {
