@@ -132,9 +132,6 @@ export const ResponseDialog: React.FC<ResponseDialogProps> = ({
 
           {/* Questions */}
           <div className="space-y-4">
-            <Label className="text-sm font-medium text-gray-700">
-              Questions *
-            </Label>
             {checkinItem.checkIn.questions.map((question, index) => (
               <div key={question.id} className="space-y-2">
                 <Label
