@@ -202,6 +202,65 @@ app.post("/api/v1/refresh", async (req, res) => {
 });
 
 /**
+ * POST /api/v1/logout
+ * Logout endpoint - validates access token and returns success
+ */
+app.post("/api/v1/logout", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        message: "Authorization header with Bearer token is required",
+      });
+    }
+
+    const accessToken = authHeader.substring(7); // Remove "Bearer " prefix
+
+    if (!accessToken) {
+      return res.status(400).json({
+        success: false,
+        message: "Access token is required",
+      });
+    }
+
+    // Verify access token
+    const decoded = jwt.verify(accessToken, JWT_SECRET) as any;
+
+    if (decoded.type !== "access") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token type",
+      });
+    }
+
+    // Optional: Verify user still exists in database
+    const user = await findUserById(decoded.id);
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    console.log(`✅ Logout successful for user: ${user.email} (${user.id})`);
+
+    res.json({
+      success: true,
+      message: `Logout successful for user ${user.id}`,
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(401).json({
+      success: false,
+      message: "Invalid access token",
+    });
+  }
+});
+
+/**
  * GET /api/v1/users
  * Debug endpoint to list all users (for development only)
  */
@@ -265,5 +324,6 @@ app.listen(PORT, () => {
   console.log(`📋 Health check: http://localhost:${PORT}/health`);
   console.log(`🔑 Login endpoint: http://localhost:${PORT}/api/v1/login`);
   console.log(`🔄 Refresh endpoint: http://localhost:${PORT}/api/v1/refresh`);
+  console.log(`🚪 Logout endpoint: http://localhost:${PORT}/api/v1/logout`);
   console.log(`👥 Debug users endpoint: http://localhost:${PORT}/api/v1/users`);
 });
