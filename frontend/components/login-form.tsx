@@ -21,6 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { If } from "@/components/ui/If";
 import { useAuth } from "./auth-context";
 import {
   loginSchema,
@@ -134,11 +135,11 @@ export const LoginForm: React.FC = () => {
                 )}
               />
 
-              {error && (
+              <If condition={!!error}>
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
-              )}
+              </If>
 
               <Button
                 type="submit"
