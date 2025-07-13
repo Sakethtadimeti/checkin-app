@@ -49,7 +49,6 @@ export interface JWTValidationResult {
 export interface JWTValidationErrorResponse {
   statusCode: number;
   headers: {
-    "Content-Type": string;
     "Access-Control-Allow-Origin": string;
   };
   body: string;
@@ -171,7 +170,6 @@ export const createJWTValidationErrorResponse = (
   return {
     statusCode,
     headers: {
-      "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
     },
     body: JSON.stringify({

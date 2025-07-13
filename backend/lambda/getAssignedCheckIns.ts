@@ -11,6 +11,11 @@ import { withJWTValidation } from "./helpers/auth";
 // Initialize the common utilities with our DynamoDB client
 initializeDynamoDB(dynamodbClient);
 
+/** This is a workaround to allow CORS requests from the frontend */
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+};
+
 const getAssignedCheckInsHandler = async (
   event: APIGatewayProxyEvent,
   user: { id: string; email: string; role: string }
@@ -26,6 +31,7 @@ const getAssignedCheckInsHandler = async (
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({
         success: true,
         message: "Assigned check-ins fetched successfully",
@@ -45,6 +51,7 @@ const getAssignedCheckInsHandler = async (
     console.error("❌ Error getting assigned check-ins:", error);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({
         success: false,
         error: "Failed to get assigned check-ins",

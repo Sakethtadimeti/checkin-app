@@ -16,13 +16,12 @@ import {
   CreateDeploymentCommand,
   GetRestApisCommand,
   DeleteRestApiCommand,
+  PutMethodResponseCommand,
+  PutIntegrationResponseCommand,
 } from "@aws-sdk/client-api-gateway";
 import { readFileSync } from "fs";
 import { join } from "path";
 
-// Accessing localstack from the host machine
-// so the endpoint is the host machine's ip address
-// TODO: read from env file
 const endpoint = "http://localhost:4566";
 const region = "us-east-1";
 const credentials = {
@@ -100,16 +99,14 @@ async function deploy() {
 
   for (const config of lambdaConfigs) {
     await deployLambda(config);
-    await createApiResource(apiId, rootResource.id!, config);
+    const resourceId = await createApiResource(apiId, rootResource.id!, config);
+    await addCorsSupport(apiId, resourceId);
     await addLambdaPermission(config.name, apiId);
     await wait(1000);
   }
 
   await apiGatewayClient.send(
-    new CreateDeploymentCommand({
-      restApiId: apiId,
-      stageName: "dev",
-    })
+    new CreateDeploymentCommand({ restApiId: apiId, stageName: "dev" })
   );
 
   const baseUrl = `http://localhost:4566/restapis/${apiId}/dev/_user_request_`;
@@ -126,14 +123,10 @@ async function deployLambda({ name, handler }: LambdaConfig) {
 
   try {
     await lambdaClient.send(new GetFunctionCommand({ FunctionName: name }));
-
     await lambdaClient.send(
       new UpdateFunctionCodeCommand({ FunctionName: name, ZipFile: zipBuffer })
     );
-    // wait before updating the function configuration
-    // this avoids ResourceConflictException
     await wait(1000);
-
     await lambdaClient.send(
       new UpdateFunctionConfigurationCommand({
         FunctionName: name,
@@ -149,16 +142,14 @@ async function deployLambda({ name, handler }: LambdaConfig) {
       })
     );
     await wait(1000);
-
     console.log(`\u{1F501} Updated Lambda: ${name}`);
   } catch (err: any) {
-    // Handle the case where the lambda does not exist
     if (err.name === "ResourceNotFoundException") {
       await lambdaClient.send(
         new CreateFunctionCommand({
           FunctionName: name,
           Runtime: "nodejs20.x",
-          Role: "arn:aws:iam::000000000000:role/lambda-role", // dummy
+          Role: "arn:aws:iam::000000000000:role/lambda-role",
           Handler: handler,
           Code: { ZipFile: zipBuffer },
           Environment: {
@@ -195,10 +186,7 @@ async function getOrCreateApi(): Promise<string> {
   const created = await apiGatewayClient.send(
     new CreateRestApiCommand({
       name: "checkin-api",
-      tags: {
-        // This ensures we have a stable id for the api
-        _custom_id_: "checkin-api",
-      },
+      tags: { _custom_id_: "checkin-api" },
     })
   );
   console.log(`✅ Created new API with ID: ${created.id}`);
@@ -218,25 +206,21 @@ async function createApiResource(
   apiId: string,
   rootResourceId: string,
   config: LambdaConfig
-) {
+): Promise<string> {
   const { name, path, method } = config;
-  // Split path into segments, e.g. /checkins/{checkInId}/responses/{userId}
   const segments = path.split("/").filter(Boolean);
   let parentId = rootResourceId;
   let resourceId = parentId;
   let currentPath = "";
 
-  // Get all resources so we can check for existence
   const { items: allResources } = await apiGatewayClient.send(
     new GetResourcesCommand({ restApiId: apiId })
   );
 
-  for (const [i, segment] of segments.entries()) {
+  for (const segment of segments) {
     currentPath += "/" + segment;
-    // Check if this resource already exists
     let resource = allResources?.find((r) => r.path === currentPath);
     if (!resource) {
-      // Create the resource
       const created = await apiGatewayClient.send(
         new CreateResourceCommand({
           restApiId: apiId,
@@ -245,16 +229,13 @@ async function createApiResource(
         })
       );
       resourceId = created.id!;
-      resource = { id: resourceId, path: currentPath };
-      // Add to allResources for next iteration
-      allResources?.push(resource as any);
+      allResources?.push({ id: resourceId, path: currentPath } as any);
     } else {
       resourceId = resource.id!;
     }
     parentId = resourceId;
   }
 
-  // Attach method/integration to the final resource
   await apiGatewayClient.send(
     new PutMethodCommand({
       restApiId: apiId,
@@ -278,6 +259,60 @@ async function createApiResource(
   );
 
   console.log(`\u{2705} Wired ${method} ${path} → ${name}`);
+  return resourceId;
+}
+
+async function addCorsSupport(apiId: string, resourceId: string) {
+  await apiGatewayClient.send(
+    new PutMethodCommand({
+      restApiId: apiId,
+      resourceId,
+      httpMethod: "OPTIONS",
+      authorizationType: "NONE",
+    })
+  );
+
+  await apiGatewayClient.send(
+    new PutIntegrationCommand({
+      restApiId: apiId,
+      resourceId,
+      httpMethod: "OPTIONS",
+      type: "MOCK",
+      requestTemplates: { "application/json": '{"statusCode": 200}' },
+      integrationHttpMethod: "OPTIONS",
+    })
+  );
+
+  await apiGatewayClient.send(
+    new PutMethodResponseCommand({
+      restApiId: apiId,
+      resourceId,
+      httpMethod: "OPTIONS",
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": true,
+        "method.response.header.Access-Control-Allow-Methods": true,
+        "method.response.header.Access-Control-Allow-Headers": true,
+      },
+      responseModels: { "application/json": "Empty" },
+    })
+  );
+
+  await apiGatewayClient.send(
+    new PutIntegrationResponseCommand({
+      restApiId: apiId,
+      resourceId,
+      httpMethod: "OPTIONS",
+      statusCode: "200",
+      responseParameters: {
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods":
+          "'GET,POST,OPTIONS'",
+        "method.response.header.Access-Control-Allow-Headers":
+          "'Content-Type,Authorization'",
+      },
+    })
+  );
 }
 
 async function addLambdaPermission(functionName: string, apiId: string) {

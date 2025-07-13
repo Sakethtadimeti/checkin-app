@@ -11,6 +11,11 @@ import { withManagerRole } from "./helpers/auth";
 
 initializeDynamoDB(dynamodbClient);
 
+/** This is a workaround to allow CORS requests from the frontend */
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+};
+
 const createCheckInHandler = async (
   event: APIGatewayProxyEvent,
   user: { id: string; email: string; role: string }
@@ -20,6 +25,7 @@ const createCheckInHandler = async (
     if (!event.body) {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({ error: "Request body is required" }),
       };
     }
@@ -31,6 +37,7 @@ const createCheckInHandler = async (
     } catch (parseError) {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({ error: "Invalid JSON in request body" }),
       };
     }
@@ -52,6 +59,7 @@ const createCheckInHandler = async (
 
     return {
       statusCode: 201,
+      headers,
       body: JSON.stringify({
         success: true,
         message: "Check-in created successfully",
@@ -70,6 +78,7 @@ const createCheckInHandler = async (
     console.error("Error creating check-in:", error);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({
         success: false,
         error: "Failed to create check-in",

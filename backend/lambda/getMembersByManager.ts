@@ -9,6 +9,11 @@ import { withManagerRole } from "./helpers/auth";
 // Initialize the common package with DynamoDB client
 initializeDynamoDB(dynamodbClient);
 
+/** This is a workaround to allow CORS requests from the frontend */
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+};
+
 /**
  * GET /users/manager/members
  * Returns all team members associated with the authenticated manager
@@ -34,6 +39,7 @@ const getMembersByManagerHandler = async (
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({
         success: true,
         message: "Members fetched successfully",
@@ -49,6 +55,7 @@ const getMembersByManagerHandler = async (
 
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({
         success: false,
         error: "Internal server error",

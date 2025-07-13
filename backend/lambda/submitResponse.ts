@@ -18,6 +18,11 @@ import { withJWTValidation } from "./helpers/auth";
 
 initializeDynamoDB(dynamodbClient);
 
+/** This is a workaround to allow CORS requests from the frontend */
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+};
+
 function createCheckInPK(checkInId: string) {
   return `checkin#${checkInId}`;
 }
@@ -38,6 +43,7 @@ const submitResponseHandler = async (
     if (!pathParams) {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({
           success: false,
           error: "Path parameters are required",
@@ -55,6 +61,7 @@ const submitResponseHandler = async (
     if (!event.body) {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({
           success: false,
           error: "Request body is required",
@@ -108,6 +115,7 @@ const submitResponseHandler = async (
 
     return {
       statusCode: 201,
+      headers,
       body: JSON.stringify({
         success: true,
         message: "Response submitted successfully",
@@ -127,6 +135,7 @@ const submitResponseHandler = async (
 
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({
         success: false,
         error: "Internal server error",

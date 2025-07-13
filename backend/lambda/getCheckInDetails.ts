@@ -12,6 +12,11 @@ import { withJWTValidation } from "./helpers/auth";
 // Initialize the common utilities with our DynamoDB client
 initializeDynamoDB(dynamodbClient);
 
+/** This is a workaround to allow CORS requests from the frontend */
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+};
+
 const getCheckInDetailsHandler = async (
   event: APIGatewayProxyEvent,
   user: { id: string; email: string; role: string }
@@ -22,6 +27,7 @@ const getCheckInDetailsHandler = async (
     if (!pathParams) {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({
           success: false,
           error: "Path parameters are required",
@@ -39,6 +45,7 @@ const getCheckInDetailsHandler = async (
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({
         success: true,
         message: "Check-in details fetched successfully",
@@ -55,6 +62,7 @@ const getCheckInDetailsHandler = async (
     console.error("❌ Error getting check-in details:", error);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({
         success: false,
         error: "Failed to get check-in details",

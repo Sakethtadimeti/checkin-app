@@ -8,6 +8,11 @@ import {
 // Initialize the common utilities with our DynamoDB client
 initializeDynamoDB(dynamodbClient);
 
+/** This is a workaround to allow CORS requests from the frontend */
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+};
+
 /**
  * Lambda handler to get all users from the TABLE_NAMES.USERS table
  * @param event - API Gateway event
@@ -36,12 +41,7 @@ export const handler = async (
 
     return {
       statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-      },
+      headers,
       body: JSON.stringify({
         success: true,
         count: safeUsers.length,
@@ -53,12 +53,7 @@ export const handler = async (
 
     return {
       statusCode: 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-      },
+      headers,
       body: JSON.stringify({
         success: false,
         error: "Internal server error",
