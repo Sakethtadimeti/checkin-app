@@ -89,3 +89,31 @@ export interface CheckinAssignment {
   completedAt?: string;
   status: "pending" | "completed" | "overdue";
 }
+
+// Check-in details response types
+export interface CheckinAssignmentDetail {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  status: "pending" | "completed" | "overdue";
+  assignedAt: string;
+  assignedBy: string;
+  completedAt?: string;
+  responses?: Array<{
+    questionId: string;
+    response: string;
+  }>;
+}
+
+export interface CheckinStatusCounts {
+  pending: number;
+  completed: number;
+}
+
+export interface CheckinDetailsData {
+  checkIn: CheckinData;
+  assignments: CheckinAssignmentDetail[];
+  statusCounts: CheckinStatusCounts;
+}
+
+export type CheckinDetailsResponse = BaseResponse<CheckinDetailsData>;

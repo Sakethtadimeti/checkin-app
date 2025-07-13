@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,16 +28,13 @@ import {
 } from "@/lib/helpers/dashboard";
 import { AddCheckinDialog } from "./add-checkin-dialog";
 import { ViewCheckinDialog } from "./view-checkin-dialog";
+import Link from "next/link";
 
 interface ManagerDashboardProps {
   userId: string;
 }
 
-export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
-  userId,
-}) => {
-  const [isLoading, setIsLoading] = useState(false);
-
+export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({}) => {
   // Fetch check-ins created by the manager
   const {
     data: checkinsData,
@@ -120,22 +117,6 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Active Check-ins
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {getActiveCheckInsCount(checkinsData?.data?.checkIns || [])}
-                  </p>
-                </div>
-                <Calendar className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
                     Team Members
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
@@ -183,7 +164,12 @@ export const ManagerDashboard: React.FC<ManagerDashboardProps> = ({
                   {checkinsData.data.checkIns.map((checkin) => (
                     <TableRow key={checkin.id}>
                       <TableCell>
-                        <div className="font-medium">{checkin.title}</div>
+                        <Link
+                          href={`/checkin/${checkin.id}`}
+                          className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          {checkin.title}
+                        </Link>
                       </TableCell>
                       <TableCell>
                         <div className="max-w-xs truncate">

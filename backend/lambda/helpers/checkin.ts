@@ -220,10 +220,10 @@ export async function getAssignedCheckInsForUserHelper(
 }
 
 /**
- * Gets all assignments and their statuses for a specific check-in
+ * Gets all assignments and their statuses for a specific check-in, including responses
  * @param docClient - DynamoDB document client
  * @param checkInId - The check-in ID
- * @returns Promise<{checkIn: CheckIn, assignments: Array<{userId: string, status: AssignmentStatus, assignedAt: string, assignedBy: string, completedAt?: string}>, statusCounts: {pending: number, completed: number}}>
+ * @returns Promise<{checkIn: CheckIn, assignments: Array<{userId: string, userName: string, userEmail: string, status: AssignmentStatus, assignedAt: string, assignedBy: string, completedAt?: string, responses?: Answer[]}>, statusCounts: {pending: number, completed: number}}>
  */
 export async function getCheckInDetailsHelper(
   docClient: DynamoDBDocumentClient,
@@ -232,10 +232,13 @@ export async function getCheckInDetailsHelper(
   checkIn: CheckIn;
   assignments: Array<{
     userId: string;
+    userName: string;
+    userEmail: string;
     status: AssignmentStatus;
     assignedAt: string;
     assignedBy: string;
     completedAt?: string;
+    responses?: Answer[];
   }>;
   statusCounts: { pending: number; completed: number };
 }> {
@@ -269,6 +272,25 @@ export async function getCheckInDetailsHelper(
   );
 
   const assignments = (assignmentsResult.Items || []) as AssignmentItem[];
+
+  // Get all responses for this check-in
+  const responsesResult = await docClient.send(
+    new QueryCommand({
+      TableName: TABLE_NAMES.CHECKINS,
+      KeyConditionExpression: "PK = :pk AND begins_with(SK, :skPrefix)",
+      ExpressionAttributeValues: {
+        ":pk": pk,
+        ":skPrefix": "response#",
+      },
+    })
+  );
+
+  const responses = (responsesResult.Items || []) as ResponseItem[];
+
+  // Create a map of responses by userId for quick lookup
+  const responseMap = new Map(
+    responses.map((response) => [response.userId, response.answers])
+  );
 
   // Calculate status counts
   const statusCounts = assignments.reduce((counts, assignment) => {
@@ -304,9 +326,11 @@ export async function getCheckInDetailsHelper(
   // Create a map for quick lookup
   const userMap = new Map(users.map((user) => [user.id, user]));
 
-  // Map assignments with user details
+  // Map assignments with user details and responses
   const userDetails = assignments.map((assignment) => {
     const user = userMap.get(assignment.userId);
+    const responses = responseMap.get(assignment.userId);
+
     return {
       userId: assignment.userId,
       userName: user?.name || "Unknown User",
@@ -315,6 +339,7 @@ export async function getCheckInDetailsHelper(
       assignedAt: assignment.assignedAt,
       assignedBy: assignment.assignedBy,
       completedAt: assignment.completedAt,
+      responses: responses || undefined,
     };
   });
 

@@ -4,6 +4,7 @@ import type {
   CheckinListData,
   CheckinResponseData,
   AssignedCheckinListData,
+  CheckinDetailsData,
 } from "../../types/checkin";
 import { API_URLS } from "./types";
 import { createAuthenticatedCall } from "./utils";
@@ -74,6 +75,18 @@ export const checkinApi = {
   getManagerCheckIns: async (): Promise<BaseResponse<CheckinListData>> => {
     return authenticatedCall(
       `${API_URLS.APP_BASE_URL}${API_URLS.CHECKINS}/manager`,
+      {
+        method: "GET",
+      }
+    );
+  },
+
+  // Get check-in details by ID
+  getCheckInDetails: async (
+    checkinId: string
+  ): Promise<BaseResponse<CheckinDetailsData>> => {
+    return authenticatedCall(
+      `${API_URLS.APP_BASE_URL}${API_URLS.CHECKINS}/${checkinId}/details`,
       {
         method: "GET",
       }
