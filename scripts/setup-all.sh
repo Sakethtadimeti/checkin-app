@@ -123,6 +123,7 @@ show_summary() {
     echo "=================="
     echo ""
     echo "📋 What was done:"
+    echo "  ✅ Set up environment file (.env)"
     echo "  ✅ Dropped all existing tables"
     echo "  ✅ Created fresh DynamoDB tables"
     echo "  ✅ Removed all existing users"
@@ -144,6 +145,18 @@ ensure_npm_install() {
         fi
     else
         print_success "Dependencies already installed"
+    fi
+}
+
+# Function to setup environment file
+setup_env_file() {
+    print_status "Setting up environment file..."
+    
+    if [ ! -f ".env" ]; then
+        cp .env.sample .env
+        print_success "Created .env file from .env.sample"
+    else
+        print_success ".env file already exists"
     fi
 }
 
@@ -171,6 +184,10 @@ main() {
     fi
     
     print_success "Prerequisites check passed"
+    echo ""
+    
+    # Setup environment file
+    setup_env_file
     echo ""
     
     # Execute setup steps
