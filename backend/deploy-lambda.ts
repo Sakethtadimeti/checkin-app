@@ -84,7 +84,7 @@ const lambdaConfigs: LambdaConfig[] = [
   {
     name: "getMembersByManager",
     handler: "getMembersByManager.handler",
-    path: "/users/manager/{managerId}/members",
+    path: "/users/manager/members",
     method: "GET",
   },
 ];

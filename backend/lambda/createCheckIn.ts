@@ -20,10 +20,6 @@ const createCheckInHandler = async (
     if (!event.body) {
       return {
         statusCode: 400,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
         body: JSON.stringify({ error: "Request body is required" }),
       };
     }
@@ -35,10 +31,6 @@ const createCheckInHandler = async (
     } catch (parseError) {
       return {
         statusCode: 400,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
         body: JSON.stringify({ error: "Invalid JSON in request body" }),
       };
     }
@@ -60,10 +52,6 @@ const createCheckInHandler = async (
 
     return {
       statusCode: 201,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
       body: JSON.stringify({
         success: true,
         message: "Check-in created successfully",
@@ -82,10 +70,6 @@ const createCheckInHandler = async (
     console.error("Error creating check-in:", error);
     return {
       statusCode: 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
       body: JSON.stringify({
         success: false,
         error: "Failed to create check-in",
