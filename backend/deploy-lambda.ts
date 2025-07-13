@@ -81,6 +81,12 @@ const lambdaConfigs: LambdaConfig[] = [
     path: "/checkins/{checkInId}/details",
     method: "GET",
   },
+  {
+    name: "getMembersByManager",
+    handler: "getMembersByManager.handler",
+    path: "/users/manager/{managerId}/members",
+    method: "GET",
+  },
 ];
 
 function wait(ms: number) {

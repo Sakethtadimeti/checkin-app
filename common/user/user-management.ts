@@ -323,6 +323,35 @@ export async function removeAllUsers(): Promise<number> {
 }
 
 /**
+ * Gets all team members for a specific manager
+ * @param managerId - The manager's user ID
+ * @returns Promise<User[]> - Array of team members
+ */
+export async function getUsersByManager(managerId: string): Promise<User[]> {
+  try {
+    const result = await getDocClient().send(
+      new QueryCommand({
+        TableName: TABLE_NAMES.USERS,
+        IndexName: "managerId-index",
+        KeyConditionExpression: "managerId = :managerId",
+        ExpressionAttributeValues: {
+          ":managerId": managerId,
+        },
+      })
+    );
+
+    if (result.Items && result.Items.length > 0) {
+      return result.Items as User[];
+    }
+
+    return [];
+  } catch (error: any) {
+    console.warn("⚠️  Could not get team members:", error.message);
+    return [];
+  }
+}
+
+/**
  * Checks if a user has team members (for managers)
  * @param managerId - The manager's user ID
  * @returns Promise<boolean> - True if manager has team members
